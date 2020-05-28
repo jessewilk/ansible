@@ -2,8 +2,8 @@
   connection: local
   vars:
     resource_group: ansible-inventory-test-rg
-    webapp_name: myfirstWebApp
-    plan_name: myAppServicePlan
+    webapp_name: myfirstWebAppJwilk
+    plan_name: myAppServicePlanJwilk
     location: eastus
   tasks:
     - name: Create a resource group
@@ -30,10 +30,10 @@
 
     - name: Create a windows web app with non-exist app service plan
       azure_rm_webapp:
-        resource_group: myResourceGroup
+        resource_group: ansible-inventory-test-rg
         name: myWinWebapp
         plan:
-          resource_group: myAppServicePlan_rg
+          resource_group: ansible-inventory-test-rg
           name: myAppServicePlan
           is_linux: false
           sku: S1
