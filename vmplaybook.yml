@@ -1,0 +1,67 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: ansible-inventory-test-rg
+      location: eastus
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: ansible-inventory-test-rg
+      name: myVnet
+      address_prefixes: "10.0.0.0/16"
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: ansible-inventory-test-rg
+      name: mySubnet
+      address_prefix: "10.0.1.0/24"
+      virtual_network: myVnet
+  - name: Create public IP address
+    azure_rm_publicipaddress:
+      resource_group: ansible-inventory-test-rg
+      allocation_method: Static
+      name: myPublicIP1
+    register: output_ip_address
+  - name: Dump public IP for VM which will be created
+    debug:
+      msg: "The public IP is {{ output_ip_address.state.ip_address }}."
+  - name: Create Network Security Group that allows SSH
+    azure_rm_securitygroup:
+      resource_group: ansible-inventory-test-rg
+      name: myNetworkSecurityGroup
+      rules:
+        - name: SSH
+          protocol: Tcp
+          destination_port_range: 22
+          access: Allow
+          priority: 1001
+          direction: Inbound
+  - name: Create virtual network interface card
+    azure_rm_networkinterface:
+      resource_group: ansible-inventory-test-rg
+      name: myNIC1
+      virtual_network: myVnet
+      subnet: mySubnet
+      public_ip_name: myPublicIP1
+      security_group: myNetworkSecurityGroup
+  - name: Create VM
+    azure_rm_virtualmachine:
+      resource_group: ansible-inventory-test-rg
+      name: myVMjwilk
+      vm_size: Standard_DS1_v2
+      admin_username: jwilk
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: ‪/home/jwilk/.ssh/authorized_keys
+          key_data: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjtcDb+TKt4iB/Qxld8cDHmaqgqQ3XvpU3NYrx+ZR23e5RCmcXh2L/T0dsX16QANyY1uqRKMP4cOsgl4jFOxeD8Luj1Ou7enmQcwcPGl/CyrEI4yxf7nbPmTebj/feuznIbmSafJlhcvDWJr0/MUiNa7vFpUf5wrY0Ky81b/dY6rdKEtfV8RpyLA2ouH2YpD4/MAvtz+UP3U1N2pdDkrjBcglZSfa9rIKK8AcjI0CH4eHke22ZDNLeKaczUmft14U+6HcVpdsO05D5ViIyhXLlBVrzmKpCi/HzBIipcJ3F5kX+xCI+d7Q3SeEMa2ZXDUOEiW6IaL/V4OBREnap3bC7"
+      network_interfaces: myNIC1
+      image:
+        offer: CentOS
+        publisher: OpenLogic
+        sku: '7.5'
+        version: latest
+      tags:
+       Ansible: nginx
+       Environment: Dev
