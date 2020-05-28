@@ -28,12 +28,12 @@
               java_container: tomcat
               java_container_version: 8.5
 
-- name: Create a windows web app with non-exist app service plan
-  azure_rm_webapp:
-    resource_group: myResourceGroup
-    name: myWinWebapp
-    plan:
-      resource_group: myAppServicePlan_rg
-      name: myAppServicePlan
-      is_linux: false
-      sku: S1
+    - name: Create a windows web app with non-exist app service plan
+      azure_rm_webapp:
+        resource_group: myResourceGroup
+        name: myWinWebapp
+        plan:
+          resource_group: myAppServicePlan_rg
+          name: myAppServicePlan
+          is_linux: false
+          sku: S1
